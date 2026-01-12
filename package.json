@@ -35,5 +35,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@typechain/hardhat": "^9.1.0",
+    "hardhat": "^2.28.3",
+    "solidity-coverage": "^0.8.17",
+    "typechain": "^8.3.2"
   }
 }
