@@ -1,23 +1,31 @@
-import logo from './logo.svg';
+import { useEffect, useState } from "react";
+import { ethers } from "ethers";
 import './App.css';
 
+import Navigation from "./components/Navigation";
+
 function App() {
+  const [account, setAccount] = useState(null);
+
+  const accountsChanged = async () => {
+    window.ethereum.on("accountsChanged", async () => {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const account = ethers.utils.getAddress(accounts[0]);
+      setAccount(account);
+    });
+  };
+
+  
+  useEffect(() => {
+    accountsChanged();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     <div>
+      <Navigation account={account} setAccount={setAccount} />
+
     </div>
   );
 }
