@@ -39,19 +39,26 @@ function App() {
     const dappazon = new ethers.Contract(
       config[network.chainId].dappazon.address,
       Dappazon,
-      provider,
+      provider
     );
     setDappazon(dappazon);
 
     const items = [];
-    for (var i = 0; i < 9; i++) {
+
+    for (let i = 0; i < 9; i++) {
       const item = await dappazon.items(i + 1);
       items.push(item);
     }
 
-    const electronics = items.filter((item) => item.category === "electronics");
-    const clothing = items.filter((item) => item.category === "clothing");
-    const toys = items.filter((item) => item.category === "toys");
+    const electronics = items.filter(
+      (item) => item.category === "electronics"
+    );
+    const clothing = items.filter(
+      (item) => item.category === "clothing"
+    );
+    const toys = items.filter(
+      (item) => item.category === "toys"
+    );
 
     setElectronics(electronics);
     setClothing(clothing);
