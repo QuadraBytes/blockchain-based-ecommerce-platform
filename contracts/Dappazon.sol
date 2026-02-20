@@ -2,7 +2,11 @@
 pragma solidity ^0.8.9;
 
 contract Dappazon {
+
     address public owner;
+
+    // seller address (Hardhat Account #0)
+    address payable public seller = payable(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
     struct Item {
         uint256 id; 
@@ -27,62 +31,54 @@ contract Dappazon {
     event Buy(address buyer, uint256 orderId, uint256 itemId);
 
     constructor () {
-        owner = msg.sender; //person who using the blockchain or smart contract at the moment. 'msg' is a global variable in the blockchain.
+        owner = msg.sender;
     }
 
-    //allows the function to call only by the owner
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Not owner");
         _;
     }
 
-    //List products by the owner
     function listItem(
         uint256 _id, 
-        string memory _name,  //memory is the location of information
+        string memory _name,
         string memory _category,
         string memory _image,
         uint256 _cost,
         uint256 _rating,
         uint256 _stock
     ) public onlyOwner {
-        //create item
-        Item memory item = Item(_id, _name, _category, _image, _cost, _rating, _stock );
 
-        //save the item in the blockchain           
+        Item memory item = Item(
+            _id, _name, _category, _image, _cost, _rating, _stock
+        );
+
         items[_id] = item;
 
-        //emit an event - it can make as push notifications when new items added
         emit List(_name, _cost, _stock);
     }
 
-    //buy product item by the buyer - here funds will be transferred to the contract
     function purchaseItem(uint256 _id) public payable {
-        //fetch item
+
         Item memory item = items[_id];
 
-        //ensure buyer sent enough ETH
-        require(msg.value >= item.cost, "Insufficient ETH sent");
+        require(item.cost > 0, "Item does not exist");
+        require(msg.value >= item.cost, "Insufficient ETH");
+        require(item.stock > 0, "Out of stock");
 
-        //ensure item is in stock
-        require(item.stock > 0, "Item is out of stock");
+        // create order
+        Order memory order = Order(block.timestamp, item);
 
-        //create an order
-        Order memory order = Order(block.timestamp, item);   
-
-        //add order to the user
-        orderCount[msg.sender]++; //increment the order count of the user
+        orderCount[msg.sender]++;
         orders[msg.sender][orderCount[msg.sender]] = order;
 
-        //substract stock
+        // reduce stock
         items[_id].stock = item.stock - 1;
 
-        emit Buy(msg.sender, orderCount[msg.sender], item.id);
-    }
+        // 🔥 transfer ETH to seller immediately
+        (bool success, ) = seller.call{value: item.cost}("");
+        require(success, "Payment failed");
 
-    //withdraw funds - get funds to the sellers account from the contract
-    function withdraw() public onlyOwner {
-        (bool success, ) = owner.call{value: address(this).balance}("");
-        require(success); 
+        emit Buy(msg.sender, orderCount[msg.sender], item.id);
     }
 }
