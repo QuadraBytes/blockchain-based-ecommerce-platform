@@ -5,7 +5,6 @@ contract ECommerce {
 
     address public owner;
 
-    // seller address (Hardhat Account #0)
     address payable public seller = payable(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
     struct Item {
@@ -66,16 +65,13 @@ contract ECommerce {
         require(msg.value >= item.cost, "Insufficient ETH");
         require(item.stock > 0, "Out of stock");
 
-        // create order
         Order memory order = Order(block.timestamp, item);
 
         orderCount[msg.sender]++;
         orders[msg.sender][orderCount[msg.sender]] = order;
 
-        // reduce stock
         items[_id].stock = item.stock - 1;
 
-        // 🔥 transfer ETH to seller immediately
         (bool success, ) = seller.call{value: item.cost}("");
         require(success, "Payment failed");
 
