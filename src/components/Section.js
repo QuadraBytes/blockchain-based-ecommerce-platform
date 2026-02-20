@@ -18,7 +18,7 @@ const Section = ({ title, items, togglePop }) => {
               <h4>{item.name}</h4>
               <Rating value={item.rating} />
               <p>
-                {ethers.utils.formatUnits(item.cost.toString(), "ether")} ETH
+                {ethers.utils.formatUnits(item.cost.toString(), "ether")} LKR
               </p>
             </div>
           </div>
