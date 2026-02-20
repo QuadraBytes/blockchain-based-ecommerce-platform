@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-
-// Components
 import Rating from "./Rating";
-
 import close from "../assets/close.svg";
 
-const Product = ({ item, provider, account, dappazon, togglePop }) => {
+const Product = ({ item, provider, account, eCommerce, togglePop }) => {
   const [order, setOrder] = useState(null);
   const [hasBought, setHasBought] = useState(false);
 
   const fetchDetails = async () => {
-    const events = await dappazon.queryFilter("Buy");
+    const events = await eCommerce.queryFilter("Buy");
     const orders = events.filter(
       (event) =>
         event.args.buyer === account &&
@@ -20,15 +17,14 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
 
     if (orders.length === 0) return;
 
-    const order = await dappazon.orders(account, orders[0].args.orderId);
+    const order = await eCommerce.orders(account, orders[0].args.orderId);
     setOrder(order);
   };
 
   const buyHandler = async () => {
     const signer = await provider.getSigner();
 
-    // Buy item...
-    let transaction = await dappazon
+    let transaction = await eCommerce
       .connect(signer)
       .purchaseItem(item.id, { value: item.cost });
     await transaction.wait();
@@ -91,10 +87,10 @@ const Product = ({ item, provider, account, dappazon, togglePop }) => {
           </button>
 
           <p>
-            <small>Ships from</small> Dappazon
+            <small>Ships from</small> E-Commerce
           </p>
           <p>
-            <small>Sold by</small> Dappazon
+            <small>Sold by</small> E-Commerce
           </p>
 
           {order && (

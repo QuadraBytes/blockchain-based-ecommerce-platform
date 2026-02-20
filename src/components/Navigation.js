@@ -12,7 +12,7 @@ const Navigation = ({ account, setAccount }) => {
   return (
     <nav>
       <div className="nav__brand">
-        <h1>Amazon</h1>
+        <h1>E-Commerce</h1>
       </div>
 
       <div></div>

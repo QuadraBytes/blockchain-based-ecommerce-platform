@@ -5,13 +5,13 @@ import Navigation from "./components/Navigation";
 import Section from "./components/Section";
 import Product from "./components/Product";
 
-import Dappazon from "./abis/Dappazon.json";
+import ECommerce from "./abis/ECommerce.json";
 import config from "./config.json";
 
 function App() {
   const [account, setAccount] = useState(null);
   const [provider, setProvider] = useState(null);
-  const [dappazon, setDappazon] = useState(null);
+  const [eCommerce, setECommerce] = useState(null);
   const [item, setItem] = useState({});
 
   const [electronics, setElectronics] = useState(null);
@@ -36,17 +36,17 @@ function App() {
 
     const network = await provider.getNetwork();
 
-    const dappazon = new ethers.Contract(
-      config[network.chainId].dappazon.address,
-      Dappazon,
+    const eCommerce = new ethers.Contract(
+      config[network.chainId].ecommerce.address,
+      ECommerce,
       provider
     );
-    setDappazon(dappazon);
+    setECommerce(eCommerce);
 
     const items = [];
 
     for (let i = 0; i < 9; i++) {
-      const item = await dappazon.items(i + 1);
+      const item = await eCommerce.items(i + 1);
       items.push(item);
     }
 
@@ -102,7 +102,7 @@ function App() {
           item={item}
           provider={provider}
           account={account}
-          dappazon={dappazon}
+          eCommerce={eCommerce}
           togglePop={togglePop}
         />
       )}
