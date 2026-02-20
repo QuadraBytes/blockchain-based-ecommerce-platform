@@ -2,7 +2,11 @@
 pragma solidity ^0.8.9;
 
 contract ECommerce {
+
     address public owner;
+
+    // seller address (Hardhat Account #0)
+    address payable public seller = payable(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266);
 
     struct Item {
         uint256 id; 
@@ -31,7 +35,7 @@ contract ECommerce {
     }
 
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "Not owner");
         _;
     }
 
@@ -44,7 +48,10 @@ contract ECommerce {
         uint256 _rating,
         uint256 _stock
     ) public onlyOwner {
-        Item memory item = Item(_id, _name, _category, _image, _cost, _rating, _stock );
+
+        Item memory item = Item(
+            _id, _name, _category, _image, _cost, _rating, _stock
+        );
 
         items[_id] = item;
 
@@ -52,24 +59,26 @@ contract ECommerce {
     }
 
     function purchaseItem(uint256 _id) public payable {
+
         Item memory item = items[_id];
 
-        require(msg.value >= item.cost, "Insufficient ETH sent");
+        require(item.cost > 0, "Item does not exist");
+        require(msg.value >= item.cost, "Insufficient ETH");
+        require(item.stock > 0, "Out of stock");
 
-        require(item.stock > 0, "Item is out of stock");
-
-        Order memory order = Order(block.timestamp, item);   
+        // create order
+        Order memory order = Order(block.timestamp, item);
 
         orderCount[msg.sender]++;
         orders[msg.sender][orderCount[msg.sender]] = order;
 
+        // reduce stock
         items[_id].stock = item.stock - 1;
 
-        emit Buy(msg.sender, orderCount[msg.sender], item.id);
-    }
+        // 🔥 transfer ETH to seller immediately
+        (bool success, ) = seller.call{value: item.cost}("");
+        require(success, "Payment failed");
 
-    function withdraw() public onlyOwner {
-        (bool success, ) = owner.call{value: address(this).balance}("");
-        require(success); 
+        emit Buy(msg.sender, orderCount[msg.sender], item.id);
     }
 }
